@@ -1,0 +1,9 @@
+---
+title: "Can constraint closure provide a generalized understanding of community dynamics in ecosystems?"
+author: "Steven L. Peck and Andrew Heiss"
+date: "Last run: `r format(Sys.time(), '%B %e, %Y')`"
+---
+
+## Abstract
+
+Understanding causal complexity in ecological communities has been a challenge to ecologists since the inception of the discipline. Here we draw insights from recent work on constraint closure that ways of grappling with ecological complexity that yield generalizable theoretical insights. Using a set of evolutionary constraints on species flow in ecological communities, including selection, species drift, dispersal, and speciation, combined with multispecies interactions such as mutualistic interactions, and abiotic constraints, we show how theoretical work on constraint closure allows the possibly of the emergence of communities as autonomous structures. Through agent-based modeling we articulate ways ecological pattern formation through constraint closure, inform questions about stability and turnover in community ecology.

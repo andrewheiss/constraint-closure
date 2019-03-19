@@ -1,0 +1,76 @@
+---
+title: "Clean data"
+author: "Steven L. Peck and Andrew Heiss"
+date: "Last run: `r format(Sys.time(), '%B %e, %Y')`"
+output: 
+  html_document:
+    code_folding: show
+editor_options: 
+  chunk_output_type: console
+---
+
+# Load and clean data
+
+```{r clean-data, warning=FALSE, message=FALSE, cache=TRUE}
+library(tidyverse)
+library(janitor)
+library(here)
+
+set.seed(1234)
+
+constraint_levels <- function(x) {
+  filter(constraints, constraint == x) %>% 
+    pull(levels_clean) %>%
+    .[[1]]
+}
+
+constraints <- tribble(
+  ~constraint, ~constraint_clean, ~levels_clean,
+  "create_network", "Network creation", list("Network creation" = "T", "No network creation" = "F"),
+  "select", "Selection", list("Selection" = "T", "No selection" = "F"),
+  "disperse", "Dispersal", list("Dispersal" = "T", "No dispersal" = "F"),
+  "compete", "Competition", list("Competition" = "T", "No competition" = "F"),
+  "selectfor_d", "Selection for D", list("Selection" = "T", "No selection" = "F"),
+  "catastrophe", "Catastrophe", list("Catastrophe" = "T", "No catastrophe" = "F")
+)
+
+saveRDS(constraints, here("data", "derived_data", "constraints.rds"))
+
+
+BHL <- read_rds(here("data", "raw_data", "BHL.rds")) %>% 
+  clean_names(case = "snake") %>%   # Get rid of invalid characters in column names
+  rename_all(funs(str_remove_all(., "yn$"))) %>%  # Get rid of "yn" in column names
+  # Clean up constraint values
+  mutate(create_network = fct_recode(create_network, !!!constraint_levels("create_network")),
+         select = fct_recode(select, !!!constraint_levels("select")),
+         disperse = fct_recode(disperse, !!!constraint_levels("disperse")),
+         compete = fct_recode(compete, !!!constraint_levels("compete")),
+         selectfor_d = fct_recode(selectfor_d, !!!constraint_levels("selectfor_d")),
+         catastrophe = fct_recode(catastrophe, !!!constraint_levels("catastrophe"))) %>% 
+  mutate_at(vars(one_of(constraints$constraint)), funs(fct_inorder(.)))
+
+saveRDS(BHL, here("data", "derived_data", "BHL.rds"))
+
+BHL %>% 
+  sample_frac(size = 0.1) %>% 
+  saveRDS(., here("data", "derived_data", "BHL_small.rds"))
+
+
+BLS <- read_rds(here("data", "raw_data", "BLS.rds")) %>% 
+  clean_names(case = "snake") %>%   # Get rid of invalid characters in column names
+  rename_all(funs(str_remove_all(., "yn$"))) %>%  # Get rid of "yn" in column names
+  # Clean up constraint values
+  mutate(create_network = fct_recode(create_network, !!!constraint_levels("create_network")),
+         select = fct_recode(select, !!!constraint_levels("select")),
+         disperse = fct_recode(disperse, !!!constraint_levels("disperse")),
+         compete = fct_recode(compete, !!!constraint_levels("compete")),
+         selectfor_d = fct_recode(selectfor_d, !!!constraint_levels("selectfor_d")),
+         catastrophe = fct_recode(catastrophe, !!!constraint_levels("catastrophe"))) %>% 
+  mutate_at(vars(one_of(constraints$constraint)), funs(fct_inorder(.)))
+
+saveRDS(BLS, here("data", "derived_data", "BLS.rds"))
+
+BLS %>% 
+  sample_frac(size = 0.1) %>% 
+  saveRDS(., here("data", "derived_data", "BLS_small.rds"))
+```

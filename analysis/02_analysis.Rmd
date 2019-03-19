@@ -1,0 +1,108 @@
+---
+title: "Analysis"
+author: "Steven L. Peck and Andrew Heiss"
+date: "Last run: `r format(Sys.time(), '%B %e, %Y')`"
+output: 
+  html_document:
+    code_folding: hide
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r load-libraries-data, warning=FALSE, message=FALSE}
+library(tidyverse)
+library(here)
+
+constraints <- read_rds(here("data", "derived_data", "constraints.rds")) 
+
+constraint_levels <- constraints %>% 
+  mutate(constraint_clean = fct_inorder(constraint_clean)) %>% 
+  mutate(levels = map(levels_clean, names)) %>% 
+  unnest(levels) %>% 
+  mutate(levels = fct_inorder(levels))
+
+# TODO: Switch back to full BLS.rds and BHL.rds
+BHL <- read_rds(here("data", "derived_data", "BHL_small.rds"))
+bhl_long <- BHL %>% 
+  gather(constraint, value, one_of(constraints$constraint)) %>% 
+  left_join(constraints, by = "constraint") %>% 
+  mutate(value = fct_relevel(value, levels(constraint_levels$levels)),
+         constraint_clean = fct_relevel(constraint_clean, 
+                                        levels(constraint_levels$constraint_clean)))
+
+BLS <- read_rds(here("data", "derived_data", "BLS_small.rds"))
+bls_long <- BLS %>% 
+  gather(constraint, value, one_of(constraints$constraint)) %>% 
+  left_join(constraints, by = "constraint") %>% 
+  mutate(value = fct_relevel(value, levels(constraint_levels$levels)),
+         constraint_clean = fct_relevel(constraint_clean, 
+                                        levels(constraint_levels$constraint_clean)))
+```
+
+
+# Single conditions, no nested interactions
+
+## Landscape fitness
+
+### High-low
+
+```{r landscape-fitness-linked-bhl-single, fig.width=8, fig.height=4}
+ggplot(bhl_long, 
+       aes(x = value, y = landscape_fitness_linked, fill = constraint_clean)) +
+  geom_violin(size = 0.25) +
+  stat_summary(geom = "point", fun.y = "mean", 
+               size = 2, pch = 21, fill = "black", color = "white") +
+  scale_y_reverse() +
+  scale_fill_viridis_d(option = "plasma", begin = 0.1, end = 0.9) +
+  guides(fill = FALSE) +
+  labs(x = NULL, y = "Landscape fitness, linked") +
+  facet_wrap(~ constraint_clean, scales = "free_x") +
+  theme_bw()
+```
+
+### Latin squares
+
+```{r landscape-fitness-linked-bls-single, fig.width=8, fig.height=4}
+ggplot(bls_long, 
+       aes(x = value, y = landscape_fitness_linked, fill = constraint_clean)) +
+  geom_violin(size = 0.25) +
+  stat_summary(geom = "point", fun.y = "mean", 
+               size = 2, pch = 21, fill = "black", color = "white") +
+  scale_y_reverse() +
+  scale_fill_viridis_d(option = "plasma", begin = 0.1, end = 0.9) +
+  guides(fill = FALSE) +
+  labs(x = NULL, y = "Landscape fitness, linked") +
+  facet_wrap(~ constraint_clean, scales = "free_x") +
+  theme_bw()
+```
+
+
+# Nested interactions
+
+## Landscape fitness, linked
+
+### High-low
+
+```{r landscape-fitness-linked-bhl, fig.width=10, fig.height=7}
+ggplot(BHL, aes(x = compete, y = landscape_fitness_linked)) +
+  geom_violin(fill = "#FE7F2D", size = 0.25) +
+  stat_summary(geom = "point", fun.y = "mean", 
+               size = 2, pch = 21, fill = "black", color = "white") +
+  scale_y_reverse() +
+  labs(x = NULL, y = "Landscape fitness, linked") +
+  facet_grid(selectfor_d + create_network ~ disperse + catastrophe) +
+  theme_bw()
+```
+
+### Latin squares
+
+```{r landscape-fitness-linked-bls, fig.width=10, fig.height=7}
+ggplot(BLS, aes(x = compete, y = landscape_fitness_linked)) +
+  geom_violin(fill = "#FE7F2D", size = 0.25) +
+  stat_summary(geom = "point", fun.y = "mean", 
+               size = 2, pch = 21, fill = "black", color = "white") +
+  scale_y_reverse() +
+  labs(x = NULL, y = "Landscape fitness, linked") +
+  facet_grid(selectfor_d + create_network ~ disperse + catastrophe) +
+  theme_bw()
+```

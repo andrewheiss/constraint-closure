@@ -1,3 +1,16 @@
+# Site output
+analysis/_site/*
+
+# knitr and caching stuff
+*/*_files/*
+*/*_cache/*
+
+# Ignore data for now, since it's huge
+data/*
+
+# Other folders
+admin/*
+
 .Rhistory
 .RData
 .Rproj.user
