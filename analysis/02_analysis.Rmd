@@ -46,18 +46,21 @@ bls_long <- BLS %>%
 
 ### High-low
 
-```{r landscape-fitness-linked-bhl-single, fig.width=8, fig.height=4}
-ggplot(bhl_long, 
-       aes(x = value, y = landscape_fitness_linked, fill = constraint_clean)) +
-  geom_violin(size = 0.25) +
+```{r landscape-fitness-linked-bhl-single, fig.width=8, fig.height=4.5}
+ggplot(bhl_long, aes(x = value, y = landscape_fitness_linked, fill = repp)) +
+  geom_violin(size = 0.25, position = position_dodge(width = 0.75)) +
   stat_summary(geom = "point", fun.y = "mean", 
+               aes(group = repp), position = position_dodge(width = 0.75),
                size = 2, pch = 21, fill = "black", color = "white") +
-  scale_y_reverse() +
+  scale_y_reverse(breaks = seq(0, 0.4, 0.2)) +
+  coord_cartesian(ylim = c(0, 0.5)) +
   scale_fill_viridis_d(option = "plasma", begin = 0.1, end = 0.9) +
-  guides(fill = FALSE) +
-  labs(x = NULL, y = "Landscape fitness, linked") +
+  labs(x = NULL, y = "Landscape fitness, linked", fill = NULL, 
+       caption = "Point = mean value") +
   facet_wrap(~ constraint_clean, scales = "free_x") +
-  theme_bw()
+  theme_bw() +
+  theme(legend.position = "top",
+        legend.key.size = unit(0.65, "lines"))
 ```
 
 ### Latin squares
@@ -68,10 +71,12 @@ ggplot(bls_long,
   geom_violin(size = 0.25) +
   stat_summary(geom = "point", fun.y = "mean", 
                size = 2, pch = 21, fill = "black", color = "white") +
-  scale_y_reverse() +
+  scale_y_reverse(breaks = seq(0, 0.4, 0.2)) +
+  coord_cartesian(ylim = c(0, 0.5)) +
   scale_fill_viridis_d(option = "plasma", begin = 0.1, end = 0.9) +
   guides(fill = FALSE) +
-  labs(x = NULL, y = "Landscape fitness, linked") +
+  labs(x = NULL, y = "Landscape fitness, linked",
+       caption = "Point = mean value") +
   facet_wrap(~ constraint_clean, scales = "free_x") +
   theme_bw()
 ```
@@ -83,15 +88,21 @@ ggplot(bls_long,
 
 ### High-low
 
-```{r landscape-fitness-linked-bhl, fig.width=10, fig.height=7}
+```{r landscape-fitness-linked-bhl, fig.width=10, fig.height=7.5}
 ggplot(BHL, aes(x = compete, y = landscape_fitness_linked)) +
-  geom_violin(fill = "#FE7F2D", size = 0.25) +
-  stat_summary(geom = "point", fun.y = "mean", 
+  geom_violin(aes(fill = repp), size = 0.1, width = 1,
+              position = position_dodge(width = 1)) +
+  stat_summary(aes(group = repp), geom = "point", fun.y = "mean", 
+               position = position_dodge(width = 1),
                size = 2, pch = 21, fill = "black", color = "white") +
-  scale_y_reverse() +
-  labs(x = NULL, y = "Landscape fitness, linked") +
+  scale_y_reverse(breaks = c(0, 0.2, 0.4)) +
+  coord_cartesian(ylim = c(0, 0.5)) +
+  labs(x = NULL, y = "Landscape fitness, linked", 
+       fill = NULL, caption = "Point = mean value") +
   facet_grid(selectfor_d + create_network ~ disperse + catastrophe) +
-  theme_bw()
+  theme_bw() +
+  theme(legend.position = "top",
+        legend.key.size = unit(0.65, "lines"))
 ```
 
 ### Latin squares
@@ -101,8 +112,10 @@ ggplot(BLS, aes(x = compete, y = landscape_fitness_linked)) +
   geom_violin(fill = "#FE7F2D", size = 0.25) +
   stat_summary(geom = "point", fun.y = "mean", 
                size = 2, pch = 21, fill = "black", color = "white") +
-  scale_y_reverse() +
-  labs(x = NULL, y = "Landscape fitness, linked") +
+  scale_y_reverse(breaks = c(0, 0.2, 0.4)) +
+  coord_cartesian(ylim = c(0, 0.5)) +
+  labs(x = NULL, y = "Landscape fitness, linked",
+       caption = "Point = mean value") +
   facet_grid(selectfor_d + create_network ~ disperse + catastrophe) +
   theme_bw()
 ```

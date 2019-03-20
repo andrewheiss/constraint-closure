@@ -47,7 +47,8 @@ BHL <- read_rds(here("data", "raw_data", "BHL.rds")) %>%
          compete = fct_recode(compete, !!!constraint_levels("compete")),
          selectfor_d = fct_recode(selectfor_d, !!!constraint_levels("selectfor_d")),
          catastrophe = fct_recode(catastrophe, !!!constraint_levels("catastrophe"))) %>% 
-  mutate_at(vars(one_of(constraints$constraint)), funs(fct_inorder(.)))
+  mutate_at(vars(one_of(constraints$constraint)), funs(fct_inorder(.))) %>% 
+  mutate(repp = factor(repp, levels = c(1, 2), labels = c("High", "Low"), ordered = TRUE))
 
 saveRDS(BHL, here("data", "derived_data", "BHL.rds"))
 
