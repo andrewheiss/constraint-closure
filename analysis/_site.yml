@@ -2,7 +2,7 @@ name: constraintclosure
 exclude:
 - Makefile
 navbar:
-  title: Constraint Closure and Community Dynamics
+  title: Constraint Closure
   right:
   - text: Simulation variables
     icon: fa-cogs
@@ -10,9 +10,15 @@ navbar:
   - text: Data cleaning
     icon: fa-table
     href: 01_clean-data.html
-  - text: Results
+  - text: Analysis for paper
+    icon: fa-bar-chart
+    href: 04_actual-analysis.html
+  - text: Preliminary analysis
     icon: fa-bar-chart
     href: 02_analysis.html
+  - text: Fancier analysis
+    icon: fa-bar-chart
+    href: 03_fancier_analysis.html
 output:
   html_document:
     theme: cosmo

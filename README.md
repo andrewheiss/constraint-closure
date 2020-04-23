@@ -1,39 +1,32 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# constraintclosure
+# Can constraint closure provide a generalized understanding of community dynamics in ecosystems?
 
 This repository contains the data and code for our paper:
 
-> Authors, (YYYY). *Title of your paper goes here*. Name of journal/book
-> <https://doi.org/xxx/xxx>
+> Steven L. Peck and Andrew Heiss, (2020). *Can constraint closure
+> provide a generalized understanding of community dynamics in
+> ecosystems?*. bioRxiv <https://doi.org/10.1101/2020.01.28.924001>
 
 Our pre-print is online here:
 
-> Authors, (YYYY). *Title of your paper goes here*. Name of
-> journal/book, Accessed 19 Mar 2019. Online at
-> <https://doi.org/xxx/xxx>
+> Steven L. Peck and Andrew Heiss, (2020). *Can constraint closure
+> provide a generalized understanding of community dynamics in
+> ecosystems?*. bioRxiv, Accessed 23 Apr 2020. Online at
+> <https://doi.org/10.1101/2020.01.28.924001>
 
-### How to cite
-
-Please cite this compendium as:
-
-> Authors, (2019). *Compendium of R code and data for Title of your
-> paper goes here*. Accessed 19 Mar 2019. Online at
-> <https://doi.org/xxx/xxx>
-
-### How to download or install
+### How to download
 
 You can download the compendium as a zip from from this URL:
 </archive/master.zip>
 
-Or you can install this compendium as an R package, constraintclosure,
-from GitHub with: \#\#\# Licenses
+### Licenses
 
 **Text and figures :**
 [CC-BY-4.0](http://creativecommons.org/licenses/by/4.0/)
 
-**Code :** See the [DESCRIPTION](DESCRIPTION) file
+**Code :** See the [LICENSE](LICENSE.md) file
 
 **Data :** [CC-0](http://creativecommons.org/publicdomain/zero/1.0/)
 attribution requested in reuse

@@ -4,19 +4,24 @@ author: "Steven L. Peck and Andrew Heiss"
 date: "Last run: `r format(Sys.time(), '%B %e, %Y')`"
 output: 
   html_document:
-    code_folding: show
+    code_folding: hide
 editor_options: 
   chunk_output_type: console
 ---
 
 # Load and clean data
 
-```{r clean-data, warning=FALSE, message=FALSE, cache=TRUE}
+```{r setup, warning=FALSE, message=FALSE}
 library(tidyverse)
 library(janitor)
 library(here)
 
 set.seed(1234)
+```
+
+
+```{r clean-data, warning=FALSE, message=FALSE, cache=TRUE}
+# Constraints -------------------------------------------------------------
 
 constraint_levels <- function(x) {
   filter(constraints, constraint == x) %>% 
@@ -37,9 +42,11 @@ constraints <- tribble(
 saveRDS(constraints, here("data", "derived_data", "constraints.rds"))
 
 
+# High/low ----------------------------------------------------------------
+
 BHL <- read_rds(here("data", "raw_data", "BHL.rds")) %>% 
   clean_names(case = "snake") %>%   # Get rid of invalid characters in column names
-  rename_all(funs(str_remove_all(., "yn$"))) %>%  # Get rid of "yn" in column names
+  rename_all(list(~str_remove_all(., "yn$"))) %>%  # Get rid of "yn" in column names
   # Clean up constraint values
   mutate(create_network = fct_recode(create_network, !!!constraint_levels("create_network")),
          select = fct_recode(select, !!!constraint_levels("select")),
@@ -47,19 +54,36 @@ BHL <- read_rds(here("data", "raw_data", "BHL.rds")) %>%
          compete = fct_recode(compete, !!!constraint_levels("compete")),
          selectfor_d = fct_recode(selectfor_d, !!!constraint_levels("selectfor_d")),
          catastrophe = fct_recode(catastrophe, !!!constraint_levels("catastrophe"))) %>% 
-  mutate_at(vars(one_of(constraints$constraint)), funs(fct_inorder(.))) %>% 
+  mutate_at(vars(one_of(constraints$constraint)), list(~ fct_inorder(.))) %>% 
   mutate(repp = factor(repp, levels = c(1, 2), labels = c("High", "Low"), ordered = TRUE))
 
-saveRDS(BHL, here("data", "derived_data", "BHL.rds"))
-
-BHL %>% 
+BHL_small <- BHL %>% 
+  group_by(repp) %>% 
   sample_frac(size = 0.1) %>% 
-  saveRDS(., here("data", "derived_data", "BHL_small.rds"))
+  ungroup()
 
+sim_hl <- BHL_small %>% 
+  # Make new columns with "_constraint" suffix that show if constraint is T/F
+  # instead of using the label. e.g. "Selection" becomes TRUE, "No selection"
+  # becomes FALSE
+  mutate_at(vars(one_of(constraints$constraint)),
+            list(constraint = ~as.logical(-as.integer(.) + 2L))) %>%
+  # Count how many of the constraints are TRUE in each row
+  mutate(n_constraints = reduce(select(., ends_with("_constraint")), `+`)) %>%
+  # Make a factor version of the constraint count for plotting
+  mutate(n_constraints_f = as.factor(n_constraints)) %>% 
+  mutate(turnover_diff = landscape_linked_species_mean_turnover - landscape_unlinked_species_mean_turnover)
+
+saveRDS(BHL, here("data", "derived_data", "BHL.rds"))
+saveRDS(BHL_small, here("data", "derived_data", "BHL_small.rds"))
+saveRDS(sim_hl, here("data", "derived_data", "sim_hl.rds"))
+
+
+# Latin squares -----------------------------------------------------------
 
 BLS <- read_rds(here("data", "raw_data", "BLS.rds")) %>% 
   clean_names(case = "snake") %>%   # Get rid of invalid characters in column names
-  rename_all(funs(str_remove_all(., "yn$"))) %>%  # Get rid of "yn" in column names
+  rename_all(list(~str_remove_all(., "yn$"))) %>%  # Get rid of "yn" in column names
   # Clean up constraint values
   mutate(create_network = fct_recode(create_network, !!!constraint_levels("create_network")),
          select = fct_recode(select, !!!constraint_levels("select")),
@@ -67,11 +91,185 @@ BLS <- read_rds(here("data", "raw_data", "BLS.rds")) %>%
          compete = fct_recode(compete, !!!constraint_levels("compete")),
          selectfor_d = fct_recode(selectfor_d, !!!constraint_levels("selectfor_d")),
          catastrophe = fct_recode(catastrophe, !!!constraint_levels("catastrophe"))) %>% 
-  mutate_at(vars(one_of(constraints$constraint)), funs(fct_inorder(.)))
+  mutate_at(vars(one_of(constraints$constraint)), list(~fct_inorder(.)))
+
+BLS_small <- BLS %>% 
+  sample_frac(size = 0.1)
+
+sim_ls <- BLS_small %>%
+  # Make new columns with "_constraint" suffix that show if constraint is T/F
+  # instead of using the label. e.g. "Selection" becomes TRUE, "No selection"
+  # becomes FALSE
+  mutate_at(vars(one_of(constraints$constraint)),
+            list(constraint = ~as.logical(-as.integer(.) + 2L))) %>%
+  # Count how many of the constraints are TRUE in each row
+  mutate(n_constraints = reduce(select(., ends_with("_constraint")), `+`)) %>%
+  # Make a factor version of the constraint count for plotting
+  mutate(n_constraints_f = as.factor(n_constraints)) %>% 
+  mutate(turnover_diff = landscape_linked_species_mean_turnover - landscape_unlinked_species_mean_turnover)
 
 saveRDS(BLS, here("data", "derived_data", "BLS.rds"))
-
-BLS %>% 
-  sample_frac(size = 0.1) %>% 
-  saveRDS(., here("data", "derived_data", "BLS_small.rds"))
+saveRDS(BLS_small, here("data", "derived_data", "BLS_small.rds"))
+saveRDS(sim_ls, here("data", "derived_data", "sim_ls.rds"))
 ```
+
+
+Create columns for every combination of constraint in the data (e.g. `select`, `select` & `disperse`, `select` & `disperse` & `create_network`, etc.)
+
+(By the inimitable Vincent Arel-Bundock)
+
+```{r cache=TRUE, warning=FALSE}
+make_combinations <- function(df, m = 5) {
+  com <- colnames(df)[2:ncol(df)] %>%
+    combn(m) %>%
+    as_tibble()
+  out <- com %>%
+    map(~ df[.]) %>%
+    map(~ rowSums(.) == ncol(.)) %>%
+    setNames(map(com, paste, collapse = " + ")) %>%
+    as_tibble()
+  return(out)
+}
+
+outcomes <- c("landscape_fitness_linked", "avg_evenness_t", "var_fitness", 
+              "landscape_richness_mean", "landscape_linked_species_mean_turnover",
+              "turnover_diff")
+
+# High/low ----------------------------------------------------------------
+
+# Select just the run number and *_constraint TRUE/FALSE columns
+constraint_combinations_hl <- sim_hl %>%
+  select(runnum, ends_with("_constraint")) %>%
+  # Shrink names by removing "_constraint"
+  rename_at(vars(ends_with("constraint")),
+            list(~str_replace_all(., "_constraint", "")))
+
+# Find all combinations of variables (m = number of items in combination; m = 2
+# means pairs, m = 3 means triplets, etc.)
+all_constraint_combos_hl <- map(2:6, ~make_combinations(constraint_combinations_hl, m = .)) %>%
+  bind_cols(constraint_combinations_hl, .)
+
+# Select the outcome variables we care about and join the constraint combinations
+constraint_combo_outcomes_hl <- sim_hl %>%
+  select(runnum, repp, n_constraints, one_of(outcomes)) %>%
+  right_join(all_constraint_combos_hl, by = "runnum")
+
+# Don't double count rows. If a row has two constraints like select and
+# disperse, it'll also have select + disperse set to TRUE. If that's the case,
+# we don't want to include it in just select or just disperse
+constraint_combo_outcomes_hl_nested <- constraint_combo_outcomes_hl %>%
+  select(-n_constraints) %>%
+  # Make long
+  gather(constraint_combo, value, -runnum, -repp, -one_of(outcomes)) %>%
+  # Count how many constraints there are within each row based on + signs
+  mutate(n = str_count(constraint_combo, "\\+") + 1) %>%
+  # Only keep rows where the constraint is turned on
+  filter(value == TRUE) %>%
+  # Nest all the constraint combinations within each row
+  group_by(runnum) %>%
+  nest()
+
+# Only keep the values where n == max(n) for that row
+# This takes ≈2 minutes
+constraint_combo_outcomes_hl_filtered <- constraint_combo_outcomes_hl_nested %>%
+  mutate(filtered = data %>% map(~filter(., n == max(.$n)))) %>%
+  select(-data) %>%
+  unnest(filtered)
+
+# This omitted all the rows where n_constraints == 0, so add those back in
+no_constraints_hl <- constraint_combo_outcomes_hl %>%
+  filter(n_constraints == 0) %>%
+  mutate(constraint_combo = "No constraints", n = 0) %>%
+  select(runnum, repp, one_of(outcomes), constraint_combo, n)
+
+constraint_combo_outcomes_hl_done <- bind_rows(constraint_combo_outcomes_hl_filtered,
+                                               no_constraints_hl) %>%
+  select(-value)
+
+saveRDS(constraint_combo_outcomes_hl_done, 
+        here("data", "derived_data", "constraint_combo_outcomes_hl.rds"))
+
+
+# Latin squares -----------------------------------------------------------
+
+# Select just the run number and *_constraint TRUE/FALSE columns
+constraint_combinations_ls <- sim_ls %>%
+  select(runnum, ends_with("_constraint")) %>% 
+  # Shrink names by removing "_constraint"
+  rename_at(vars(ends_with("constraint")), 
+            list(~str_replace_all(., "_constraint", "")))
+
+# Find all combinations of variables (m = number of items in combination; m = 2
+# means pairs, m = 3 means triplets, etc.)
+all_constraint_combos_ls <- map(2:6, ~make_combinations(constraint_combinations_ls, m = .)) %>% 
+  bind_cols(constraint_combinations_ls, .)
+
+# Select the outcome variables we care about and join the constraint combinations
+constraint_combo_outcomes_ls <- sim_ls %>%
+  select(runnum, n_constraints, one_of(outcomes)) %>% 
+  right_join(all_constraint_combos_ls, by = "runnum")
+
+# Don't double count rows. If a row has two constraints like select and
+# disperse, it'll also have select + disperse set to TRUE. If that's the case,
+# we don't want to include it in just select or just disperse
+constraint_combo_outcomes_ls_nested <- constraint_combo_outcomes_ls %>% 
+  select(-n_constraints) %>% 
+  # Make long
+  gather(constraint_combo, value, -runnum, -one_of(outcomes)) %>% 
+  # Count how many constraints there are within each row based on + signs
+  mutate(n = str_count(constraint_combo, "\\+") + 1) %>%
+  # Only keep rows where the constraint is turned on
+  filter(value == TRUE) %>%
+  # Nest all the constraint combinations within each row
+  group_by(runnum) %>% 
+  nest()
+
+# Only keep the values where n == max(n) for that row
+# This takes ≈1 minute
+constraint_combo_outcomes_ls_filtered <- constraint_combo_outcomes_ls_nested %>% 
+  mutate(filtered = data %>% map(~filter(., n == max(.$n)))) %>% 
+  select(-data) %>% 
+  unnest(filtered)
+
+# This omitted all the rows where n_constraints == 0, so add those back in
+no_constraints_ls <- constraint_combo_outcomes_ls %>% 
+  filter(n_constraints == 0) %>% 
+  mutate(constraint_combo = "No constraints", n = 0) %>% 
+  select(runnum, one_of(outcomes), constraint_combo, n)
+
+constraint_combo_outcomes_ls_done <- bind_rows(constraint_combo_outcomes_ls_filtered,
+                                               no_constraints_ls) %>% 
+  select(-value)
+
+saveRDS(constraint_combo_outcomes_ls_done, 
+        here("data", "derived_data", "constraint_combo_outcomes_ls.rds"))
+```
+
+
+Data details:
+
+- High-low full: `r scales::comma(nrow(BHL))` rows
+    - High: `r scales::comma(nrow(filter(BHL, repp == "High")))` rows
+    - Low: `r scales::comma(nrow(filter(BHL, repp == "Low")))` rows
+- High-low small: `r scales::comma(nrow(BHL_small))` rows
+    - High: `r scales::comma(nrow(filter(BHL_small, repp == "High")))` rows
+    - Low: `r scales::comma(nrow(filter(BHL_small, repp == "Low")))` rows
+- Latin squares full: `r scales::comma(nrow(BLS))` rows
+- Latin squares small: `r scales::comma(nrow(BLS_small))` rows
+
+
+\
+
+# Original computing environment
+
+<button data-toggle="collapse" data-target="#sessioninfo" class="btn btn-primary btn-md btn-info">Here's what we used the last time we built this page</button>
+
+<div id="sessioninfo" class="collapse">
+
+```{r show-session-info, echo=TRUE, width=100}
+writeLines(readLines(file.path(Sys.getenv("HOME"), ".R/Makevars")))
+
+devtools::session_info()
+```
+
+</div> 
