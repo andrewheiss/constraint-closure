@@ -1,5 +1,6 @@
 # Site output
 analysis/_site/*
+analysis/output/*.tiff
 
 # knitr and caching stuff
 */*_files/*

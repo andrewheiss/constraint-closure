@@ -252,6 +252,13 @@ plot_fitness_boxplot <- ggplot(sim_ls, aes(x = n_constraints_f, y = landscape_fi
         legend.box.margin = ggplot2::margin(l = -0.5, t = 4.15, unit = "lines"),
         legend.key.size = unit(0.75, "lines"))
 plot_fitness_boxplot
+
+ggsave(plot_fitness_boxplot, filename = here("analysis", "output", "fitness_A.pdf"),
+       width = params$fig_width, height = params$fig_height, units = "in", device = cairo_pdf)
+ggsave(plot_fitness_boxplot, filename = here("analysis", "output", "fitness_A.png"),
+       width = params$fig_width, height = params$fig_height, units = "in", type = "cairo", dpi = 300)
+ggsave(plot_fitness_boxplot, filename = here("analysis", "output", "fitness_A.tiff"),
+       width = params$fig_width, height = params$fig_height, units = "in", type = "cairo", dpi = 600)
 ```
 
 ```{r landscape-fitness-hl-boxplot, fig.width=params$fig_width_html, fig.height=params$fig_height_html}
@@ -300,10 +307,10 @@ ggsave(combined_fitness, filename = here("analysis", "output", "fitness_boxplots
        width = params$fig_width2, height = params$fig_height, units = "in", device = cairo_pdf)
 ggsave(combined_fitness, filename = here("analysis", "output", "fitness_boxplots.png"),
        width = params$fig_width2, height = params$fig_height, units = "in", type = "cairo", dpi = 300)
-# ggsave(combined_fitness, filename = here("analysis", "output", "fitness_combined.tiff"),
-#        width = params$fig_width2, height = params$fig_height, units = "in", type = "cairo", dpi = 600)
+ggsave(combined_fitness, filename = here("analysis", "output", "fitness_boxplots.tiff"),
+       width = params$fig_width2, height = params$fig_height, units = "in", type = "cairo", dpi = 600)
 # ggsave(combined_fitness, filename = here("analysis", "output", "fitness_combined.eps"),
-#        width = params$fig_width2, height = params$fig_height, units = "in", device = cairo_ps, fallback_resolution = 600) 
+#        width = params$fig_width2, height = params$fig_height, units = "in", device = cairo_ps, fallback_resolution = 600)
 ```
 
 ```{r landscape-fitness-importance, cache=TRUE}
@@ -348,7 +355,7 @@ plot_fitness_importance_ls <- ggplot(fitness_importance_ls,
   guides(shape = guide_legend(direction = "horizontal",
                               override.aes = list(size = 0.25))) +
   labs(x = "Percent increase in MSE when excluded", y = NULL, 
-       title = "C: Constraint importance for landscape fitness",
+       title = "B: Constraint importance for landscape fitness",
        subtitle = "Higher values indicate greater variable importance",
        caption = "") +
   theme_constraint() + 
@@ -362,6 +369,13 @@ plot_fitness_importance_ls <- ggplot(fitness_importance_ls,
         legend.key.width = unit(2.5, "lines"),
         legend.key.size = unit(0.95, "lines"))
 plot_fitness_importance_ls
+
+ggsave(plot_fitness_importance_ls, filename = here("analysis", "output", "fitness_B.pdf"),
+       width = params$fig_width, height = params$fig_height, units = "in", device = cairo_pdf)
+ggsave(plot_fitness_importance_ls, filename = here("analysis", "output", "fitness_B.png"),
+       width = params$fig_width, height = params$fig_height, units = "in", type = "cairo", dpi = 300)
+ggsave(plot_fitness_importance_ls, filename = here("analysis", "output", "fitness_B.tiff"),
+       width = params$fig_width, height = params$fig_height, units = "in", type = "cairo", dpi = 600)
 ```
 
 ```{r constraint-importance-hl-plot, fig.width=params$fig_width_html, fig.height=params$fig_height_html}
@@ -429,13 +443,15 @@ ggsave(importance_fitness, filename = here("analysis", "output", "fitness_import
 ```{r plot-fitness-all-combos, fig.width=params$fig_width_big, fig.height=params$fig_height_big}
 plot_fitness_all <- mega_means_plot(constraint_combo_outcomes_ls, landscape_fitness_linked, 
                                     xlab = "Average landscape fitness", 
-                                    title = "E: Average landscape fitness across combinations of constraints")
+                                    title = "C: Average landscape fitness across combinations of constraints")
 
 plot_fitness_all
 ggsave(plot_fitness_all, filename = here("analysis", "output", "fitness_means_all.pdf"),
        width = params$fig_width_big, height = params$fig_height_big, units = "in", device = cairo_pdf)
 ggsave(plot_fitness_all, filename = here("analysis", "output", "fitness_means_all.png"),
        width = params$fig_width_big, height = params$fig_height_big, units = "in", type = "cairo", dpi = 300)
+ggsave(plot_fitness_all, filename = here("analysis", "output", "fitness_means_all.tiff"),
+       width = params$fig_width_big, height = params$fig_height_big, units = "in", type = "cairo", dpi = 600)
 ```
 
 ## Figure 5: Landscape fitness variance
@@ -443,7 +459,8 @@ ggsave(plot_fitness_all, filename = here("analysis", "output", "fitness_means_al
 **Fig 5. Effect of the number of constraints on variance of landscape fitness** Boxplots showing variance of landscape fitness across different numbers of constraints
 
 ```{r landscape-fitness-var-boxplot, fig.width=params$fig_width_html, fig.height=params$fig_height_html}
-ggplot(sim_ls, aes(x = n_constraints_f, y = landscape_fitness_var)) +
+plot_landscape_fitness_variance <- ggplot(sim_ls, 
+                                          aes(x = n_constraints_f, y = landscape_fitness_var)) +
   geom_half_point(size = 0.05, alpha = 0.1, side = "r", color = "grey50",
                   transformation_params = list(width = 0.25, height = 0, seed = 1234)) +
   geom_half_boxplot(size = 0.25, side = "l", outlier.shape = NA, errorbar.draw = TRUE) +
@@ -460,6 +477,15 @@ ggplot(sim_ls, aes(x = n_constraints_f, y = landscape_fitness_var)) +
   theme_constraint() + 
   theme(panel.grid.major.x = element_blank(),
         plot.caption = element_markdown())
+
+plot_landscape_fitness_variance
+
+ggsave(plot_landscape_fitness_variance, filename = here("analysis", "output", "fitness_variance.pdf"),
+       width = params$fig_width, height = params$fig_height, units = "in", device = cairo_pdf)
+ggsave(plot_landscape_fitness_variance, filename = here("analysis", "output", "fitness_variance.png"),
+       width = params$fig_width, height = params$fig_height, units = "in", type = "cairo", dpi = 300)
+ggsave(plot_landscape_fitness_variance, filename = here("analysis", "output", "fitness_variance.tiff"),
+       width = params$fig_width, height = params$fig_height, units = "in", type = "cairo", dpi = 600)
 ```
 
 
@@ -495,6 +521,13 @@ plot_evenness_boxplot <- ggplot(sim_ls, aes(x = n_constraints_f, y = avg_evennes
         legend.box.margin = ggplot2::margin(l = -0.5, t = 4.15, unit = "lines"),
         legend.key.size = unit(0.75, "lines"))
 plot_evenness_boxplot
+
+ggsave(plot_evenness_boxplot, filename = here("analysis", "output", "evenness_A.pdf"),
+       width = params$fig_width, height = params$fig_height, units = "in", device = cairo_pdf)
+ggsave(plot_evenness_boxplot, filename = here("analysis", "output", "evenness_A.png"),
+       width = params$fig_width, height = params$fig_height, units = "in", type = "cairo", dpi = 300)
+ggsave(plot_evenness_boxplot, filename = here("analysis", "output", "evenness_A.tiff"),
+       width = params$fig_width, height = params$fig_height, units = "in", type = "cairo", dpi = 600)
 ```
 
 ```{r ecological-evenness-hl-boxplot, fig.width=params$fig_width_html, fig.height=params$fig_height_html}
@@ -593,7 +626,7 @@ plot_evenness_importance_ls <- ggplot(evenness_importance_ls,
   guides(shape = guide_legend(direction = "horizontal",
                                           override.aes = list(size = 0.25))) +
   labs(x = "Percent increase in MSE when excluded", y = NULL, 
-       title = "C: Constraint importance for ecological evenness",
+       title = "B: Constraint importance for ecological evenness",
        subtitle = "Higher values indicate greater variable importance",
        caption = "") +
   theme_constraint() + 
@@ -607,6 +640,13 @@ plot_evenness_importance_ls <- ggplot(evenness_importance_ls,
         legend.key.width = unit(2.5, "lines"),
         legend.key.size = unit(0.95, "lines"))
 plot_evenness_importance_ls
+
+ggsave(plot_evenness_importance_ls, filename = here("analysis", "output", "evenness_B.pdf"),
+       width = params$fig_width, height = params$fig_height, units = "in", device = cairo_pdf)
+ggsave(plot_evenness_importance_ls, filename = here("analysis", "output", "evenness_B.png"),
+       width = params$fig_width, height = params$fig_height, units = "in", type = "cairo", dpi = 300)
+ggsave(plot_evenness_importance_ls, filename = here("analysis", "output", "evenness_B.tiff"),
+       width = params$fig_width, height = params$fig_height, units = "in", type = "cairo", dpi = 600)
 ```
 
 ```{r evenness-importance-hl-plot, fig.width=params$fig_width_html, fig.height=params$fig_height_html}
@@ -666,8 +706,6 @@ ggsave(importance_evenness, filename = here("analysis", "output", "evenness_impo
        width = params$fig_width2, height = params$fig_height, units = "in", device = cairo_pdf)
 ggsave(importance_evenness, filename = here("analysis", "output", "evenness_importance.png"),
        width = params$fig_width2, height = params$fig_height, units = "in", type = "cairo", dpi = 300)
-# ggsave(combined_fitness, filename = here("analysis", "output", "fitness_combined.tiff"),
-#        width = params$fig_width2, height = params$fig_height, units = "in", type = "cairo", dpi = 600)
 # ggsave(combined_fitness, filename = here("analysis", "output", "fitness_combined.eps"),
 #        width = params$fig_width2, height = params$fig_height, units = "in", device = cairo_ps, fallback_resolution = 600) 
 ```
@@ -675,14 +713,17 @@ ggsave(importance_evenness, filename = here("analysis", "output", "evenness_impo
 ```{r plot-evenness-all-combos, fig.width=params$fig_width_big, fig.height=params$fig_height_big, warning=FALSE, message=FALSE}
 plot_evenness_all <- mega_means_plot(constraint_combo_outcomes_ls, avg_evenness_t, 
                                      xlab = "Average ecological evenness", 
-                                     title = "E: Average evological evenness across combinations of constraints", 
+                                     title = "C: Average ecological evenness across combinations of constraints", 
                                      add_to_left = 0.08)
 
 plot_evenness_all
+
 ggsave(plot_evenness_all, filename = here("analysis", "output", "evenness_means_all.pdf"),
        width = params$fig_width_big, height = params$fig_height_big, units = "in", device = cairo_pdf)
 ggsave(plot_evenness_all, filename = here("analysis", "output", "evenness_means_all.png"),
        width = params$fig_width_big, height = params$fig_height_big, units = "in", type = "cairo", dpi = 300)
+ggsave(plot_evenness_all, filename = here("analysis", "output", "evenness_means_all.tiff"),
+       width = params$fig_width_big, height = params$fig_height_big, units = "in", type = "cairo", dpi = 600)
 ```
 
 
@@ -718,6 +759,13 @@ plot_richness_boxplot <- ggplot(sim_ls, aes(x = n_constraints_f, y = landscape_r
         legend.box.margin = ggplot2::margin(l = -0.5, t = 4.15, unit = "lines"),
         legend.key.size = unit(0.75, "lines"))
 plot_richness_boxplot
+
+ggsave(plot_richness_boxplot, filename = here("analysis", "output", "richness_A.pdf"),
+       width = params$fig_width, height = params$fig_height, units = "in", device = cairo_pdf)
+ggsave(plot_richness_boxplot, filename = here("analysis", "output", "richness_A.png"),
+       width = params$fig_width, height = params$fig_height, units = "in", type = "cairo", dpi = 300)
+ggsave(plot_richness_boxplot, filename = here("analysis", "output", "richness_A.tiff"),
+       width = params$fig_width, height = params$fig_height, units = "in", type = "cairo", dpi = 600)
 ```
 
 ```{r landscape-richness-hl-boxplot, fig.width=params$fig_width_html, fig.height=params$fig_height_html}
@@ -816,7 +864,7 @@ plot_richness_importance_ls <- ggplot(richness_importance_ls,
   guides(shape = guide_legend(direction = "horizontal",
                                           override.aes = list(size = 0.25))) +
   labs(x = "Percent increase in MSE when excluded", y = NULL, 
-       title = "C: Constraint importance for landscape richness",
+       title = "B: Constraint importance for landscape richness",
        subtitle = "Higher values indicate greater variable importance",
        caption = "") +
   theme_constraint() + 
@@ -830,6 +878,13 @@ plot_richness_importance_ls <- ggplot(richness_importance_ls,
         legend.key.width = unit(2.5, "lines"),
         legend.key.size = unit(0.95, "lines"))
 plot_richness_importance_ls
+
+ggsave(plot_richness_importance_ls, filename = here("analysis", "output", "richness_B.pdf"),
+       width = params$fig_width, height = params$fig_height, units = "in", device = cairo_pdf)
+ggsave(plot_richness_importance_ls, filename = here("analysis", "output", "richness_B.png"),
+       width = params$fig_width, height = params$fig_height, units = "in", type = "cairo", dpi = 300)
+ggsave(plot_richness_importance_ls, filename = here("analysis", "output", "richness_B.tiff"),
+       width = params$fig_width, height = params$fig_height, units = "in", type = "cairo", dpi = 600)
 ```
 
 ```{r richness-importance-hl-plot, fig.width=params$fig_width_html, fig.height=params$fig_height_html}
@@ -898,7 +953,7 @@ ggsave(importance_richness, filename = here("analysis", "output", "richness_impo
 ```{r plot-richness-all-combos, fig.width=params$fig_width_big, fig.height=params$fig_height_big, warning=FALSE, message=FALSE}
 plot_richness_all <- mega_means_plot(constraint_combo_outcomes_ls, landscape_richness_mean, 
                                      xlab = "Average landscape richness", 
-                                     title = "E: Average landscape richness across combinations of constraints", 
+                                     title = "C: Average landscape richness across combinations of constraints", 
                                      add_to_left = 1)
 
 plot_richness_all
@@ -906,6 +961,8 @@ ggsave(plot_richness_all, filename = here("analysis", "output", "richness_means_
        width = params$fig_width_big, height = params$fig_height_big, units = "in", device = cairo_pdf)
 ggsave(plot_richness_all, filename = here("analysis", "output", "richness_means_all.png"),
        width = params$fig_width_big, height = params$fig_height_big, units = "in", type = "cairo", dpi = 300)
+ggsave(plot_richness_all, filename = here("analysis", "output", "richness_means_all.tiff"),
+       width = params$fig_width_big, height = params$fig_height_big, units = "in", type = "cairo", dpi = 600)
 ```
 
 
@@ -941,6 +998,13 @@ plot_turnover_boxplot <- ggplot(sim_ls, aes(x = n_constraints_f, y = turnover_di
         legend.box.margin = ggplot2::margin(l = -0.5, t = 4.15, unit = "lines"),
         legend.key.size = unit(0.75, "lines"))
 plot_turnover_boxplot
+
+ggsave(plot_turnover_boxplot, filename = here("analysis", "output", "turnover_A.pdf"),
+       width = params$fig_width, height = params$fig_height, units = "in", device = cairo_pdf)
+ggsave(plot_turnover_boxplot, filename = here("analysis", "output", "turnover_A.png"),
+       width = params$fig_width, height = params$fig_height, units = "in", type = "cairo", dpi = 300)
+ggsave(plot_turnover_boxplot, filename = here("analysis", "output", "turnover_A.tiff"),
+       width = params$fig_width, height = params$fig_height, units = "in", type = "cairo", dpi = 600)
 ```
 
 ```{r turnover-hl-boxplot, fig.width=params$fig_width_html, fig.height=params$fig_height_html}
@@ -1040,7 +1104,7 @@ plot_turnover_importance_ls <- ggplot(turnover_importance_ls,
   guides(shape = guide_legend(direction = "horizontal",
                               override.aes = list(size = 0.25))) +
   labs(x = "Percent increase in MSE when excluded", y = NULL, 
-       title = "C: Constraint importance for ∆ species turnover",
+       title = "B: Constraint importance for ∆ species turnover",
        subtitle = "Higher values indicate greater variable importance",
        caption = "") +
   theme_constraint() + 
@@ -1054,6 +1118,13 @@ plot_turnover_importance_ls <- ggplot(turnover_importance_ls,
         legend.key.width = unit(2.5, "lines"),
         legend.key.size = unit(0.95, "lines"))
 plot_turnover_importance_ls
+
+ggsave(plot_turnover_importance_ls, filename = here("analysis", "output", "turnover_B.pdf"),
+       width = params$fig_width, height = params$fig_height, units = "in", device = cairo_pdf)
+ggsave(plot_turnover_importance_ls, filename = here("analysis", "output", "turnover_B.png"),
+       width = params$fig_width, height = params$fig_height, units = "in", type = "cairo", dpi = 300)
+ggsave(plot_turnover_importance_ls, filename = here("analysis", "output", "turnover_B.tiff"),
+       width = params$fig_width, height = params$fig_height, units = "in", type = "cairo", dpi = 600)
 ```
 
 ```{r turnover-importance-hl-plot, fig.width=params$fig_width_html, fig.height=params$fig_height_html}
@@ -1122,7 +1193,7 @@ ggsave(importance_turnover, filename = here("analysis", "output", "turnover_impo
 ```{r plot-turnover-all-combos, fig.width=params$fig_width_big, fig.height=params$fig_height_big, warning=FALSE, message=FALSE}
 plot_turnover_all <- mega_means_plot(constraint_combo_outcomes_ls, turnover_diff, 
                                      xlab = "Average ∆ turnover", 
-                                     title = "E: Average ∆ in turnover (linked species − unlinked species) across combinations of constraints", 
+                                     title = "C: Average ∆ in turnover (linked species − unlinked species) across combinations of constraints", 
                                      add_to_right = 0.02, add_to_left = 0.02)
 
 plot_turnover_all
@@ -1130,6 +1201,8 @@ ggsave(plot_turnover_all, filename = here("analysis", "output", "turnover_means_
        width = params$fig_width_big, height = params$fig_height_big, units = "in", device = cairo_pdf)
 ggsave(plot_turnover_all, filename = here("analysis", "output", "turnover_means_all.png"),
        width = params$fig_width_big, height = params$fig_height_big, units = "in", type = "cairo", dpi = 300)
+ggsave(plot_turnover_all, filename = here("analysis", "output", "turnover_means_all.tiff"),
+       width = params$fig_width_big, height = params$fig_height_big, units = "in", type = "cairo", dpi = 600)
 ```
 
 

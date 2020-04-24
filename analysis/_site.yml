@@ -1,6 +1,5 @@
 name: constraintclosure
-exclude:
-- Makefile
+exclude: ["Makefile", "output/*.tiff"]
 navbar:
   title: Constraint Closure
   right:
