@@ -32,6 +32,9 @@ library(pluralize)     # [github::hrbrmstr/pluralize] v0.1.0
 library(glue)          # CRAN v1.4.0
 library(here)          # CRAN v0.1
 
+# Disable dplyr's automatic ungrouping message
+options(dplyr.summarise.inform = FALSE)
+
 SEED <- 1234
 
 sim_hl <- read_rds(here("data", "derived_data", "sim_hl.rds"))
@@ -41,9 +44,18 @@ sim_high <- sim_hl %>% filter(repp == "High")
 sim_low <- sim_hl %>% filter(repp == "Low")
 
 constraint_combo_outcomes_hl <- read_rds(here("data", "derived_data", 
-                                              "constraint_combo_outcomes_hl.rds"))
+                                              "constraint_combo_outcomes_hl.rds")) %>% 
+  mutate(constraint_combo = str_replace(constraint_combo, "selectfor_d", "species_drift"),
+         constraint_combo = str_replace(constraint_combo, "select", "selection"),
+         constraint_combo = str_replace(constraint_combo, "compete", "competition"),
+         constraint_combo = str_replace(constraint_combo, "disperse", "dispersal"))
+
 constraint_combo_outcomes_ls <- read_rds(here("data", "derived_data", 
-                                              "constraint_combo_outcomes_ls.rds"))
+                                              "constraint_combo_outcomes_ls.rds")) %>% 
+  mutate(constraint_combo = str_replace(constraint_combo, "selectfor_d", "species_drift"),
+         constraint_combo = str_replace(constraint_combo, "select", "selection"),
+         constraint_combo = str_replace(constraint_combo, "compete", "competition"),
+         constraint_combo = str_replace(constraint_combo, "disperse", "dispersal"))
 
 diff_hl_outcomes_full <- sim_hl %>%
   group_by(n_constraints_f) %>%
@@ -103,11 +115,15 @@ theme_constraint <- function(base_size = 8, base_family = "DejaVu Sans Condensed
 # 6 colors, default palette, soft (k-means)
 clrs <- list(
   select = "#6295cd",  # blue
-  compete = "#b3943f",  #gold
+  selection = "#6295cd",  # blue
+  compete = "#b3943f",  # gold
+  competition = "#b3943f",  # gold
   catastrophe = "#9466c9",  # purple
   create_network = "#62a85b",  # green
+  dispersal = "#c85990",  # pink
   disperse = "#c85990",  # pink
   selectfor_d = "#ca5d46",  # reddish
+  species_drift = "#ca5d46",  # reddish
   grey = "#7f7f7f"  # grey50
 )
 
@@ -118,8 +134,14 @@ color_constraints <- function(df, constraint_col) {
              str_replace_all(constraint_colored,  "\\bselect\\b",
                              glue("<span style='color:{clrs$select}'>select</span>")),
            constraint_colored =
+             str_replace_all(constraint_colored,  "\\bselection\\b",
+                             glue("<span style='color:{clrs$selection}'>selection</span>")),
+           constraint_colored =
              str_replace_all(constraint_colored, "\\bcompete\\b",
                              glue("<span style='color:{clrs$compete}'>compete</span>")),
+           constraint_colored =
+             str_replace_all(constraint_colored, "\\bcompetition\\b",
+                             glue("<span style='color:{clrs$competition}'>competition</span>")),
            constraint_colored =
              str_replace_all(constraint_colored, "\\bcatastrophe\\b",
                              glue("<span style='color:{clrs$catastrophe}'>catastrophe</span>")),
@@ -130,8 +152,14 @@ color_constraints <- function(df, constraint_col) {
              str_replace_all(constraint_colored, "\\bdisperse\\b",
                              glue("<span style='color:{clrs$disperse}'>disperse</span>")),
            constraint_colored =
+             str_replace_all(constraint_colored, "\\bdispersal\\b",
+                             glue("<span style='color:{clrs$dispersal}'>dispersal</span>")),
+           constraint_colored =
              str_replace_all(constraint_colored, "\\bselectfor_d\\b",
-                             glue("<span style='color:{clrs$selectfor_d}'>selectfor_d</span>")))
+                             glue("<span style='color:{clrs$selectfor_d}'>selectfor_d</span>")),
+           constraint_colored =
+             str_replace_all(constraint_colored, "\\bspecies_drift\\b",
+                             glue("<span style='color:{clrs$species_drift}'>species_drift</span>")))
 }
 
 # Function for plotting outcomes across combinations of constraints
@@ -145,6 +173,11 @@ mega_means_plot <- function(df, var_name, xlab, title, add_to_right = 0, add_to_
                                      str_wrap(constraint_combo, width = 40, exdent = 8), 
                                      constraint_combo)) %>% 
     mutate(constraint_combo = str_replace_all(constraint_combo, " {8}", "<br>")) %>% 
+    mutate(constraint_combo = recode(constraint_combo,
+                                     `select` = "selection",
+                                     `compete` = "competition",
+                                     `disperse` = "dispersal",
+                                     `selectfor_d` = "species_drift")) %>% 
     color_constraints(constraint_combo) %>% 
     mutate(constraint_colored = fct_inorder(constraint_colored),
            n_title = map_chr(n, ~paste0(., pluralize(" constraint", .))))
@@ -257,8 +290,6 @@ ggsave(plot_fitness_boxplot, filename = here("analysis", "output", "fitness_A.pd
        width = params$fig_width, height = params$fig_height, units = "in", device = cairo_pdf)
 ggsave(plot_fitness_boxplot, filename = here("analysis", "output", "fitness_A.png"),
        width = params$fig_width, height = params$fig_height, units = "in", type = "cairo", dpi = 300)
-ggsave(plot_fitness_boxplot, filename = here("analysis", "output", "fitness_A.tiff"),
-       width = params$fig_width, height = params$fig_height, units = "in", type = "cairo", dpi = 600)
 ```
 
 ```{r landscape-fitness-hl-boxplot, fig.width=params$fig_width_html, fig.height=params$fig_height_html}
@@ -307,8 +338,6 @@ ggsave(combined_fitness, filename = here("analysis", "output", "fitness_boxplots
        width = params$fig_width2, height = params$fig_height, units = "in", device = cairo_pdf)
 ggsave(combined_fitness, filename = here("analysis", "output", "fitness_boxplots.png"),
        width = params$fig_width2, height = params$fig_height, units = "in", type = "cairo", dpi = 300)
-ggsave(combined_fitness, filename = here("analysis", "output", "fitness_boxplots.tiff"),
-       width = params$fig_width2, height = params$fig_height, units = "in", type = "cairo", dpi = 600)
 # ggsave(combined_fitness, filename = here("analysis", "output", "fitness_combined.eps"),
 #        width = params$fig_width2, height = params$fig_height, units = "in", device = cairo_ps, fallback_resolution = 600)
 ```
@@ -336,10 +365,29 @@ forest_model_fitness_high <-
 ```
 
 ```{r fitness-importance-ls-plot, fig.width=params$fig_width_html, fig.height=params$fig_height_html}
+clrs <- list(
+  select = "#6295cd",  # blue
+  selection = "#6295cd",  # blue
+  compete = "#b3943f",  # gold
+  competition = "#b3943f",  # gold
+  catastrophe = "#9466c9",  # purple
+  create_network = "#62a85b",  # green
+  dispersal = "#c85990",  # pink
+  disperse = "#c85990",  # pink
+  selectfor_d = "#ca5d46",  # reddish
+  species_drift = "#ca5d46",  # reddish
+  grey = "#7f7f7f"  # grey50
+)
+
 fitness_importance_ls <- importance(forest_model_fitness, type = 1, scale = TRUE) %>% 
   data.frame() %>% 
   rownames_to_column(var = "constraint") %>% 
   arrange(desc(X.IncMSE)) %>% 
+  mutate(constraint = recode(constraint,
+                             `select` = "selection",
+                             `compete` = "competition",
+                             `disperse` = "dispersal",
+                             `selectfor_d` = "species_drift")) %>% 
   color_constraints(constraint) %>% 
   mutate_at(vars(starts_with("constraint")), fct_inorder) %>% 
   mutate(X.IncMSE = X.IncMSE / 100)
@@ -374,8 +422,6 @@ ggsave(plot_fitness_importance_ls, filename = here("analysis", "output", "fitnes
        width = params$fig_width, height = params$fig_height, units = "in", device = cairo_pdf)
 ggsave(plot_fitness_importance_ls, filename = here("analysis", "output", "fitness_B.png"),
        width = params$fig_width, height = params$fig_height, units = "in", type = "cairo", dpi = 300)
-ggsave(plot_fitness_importance_ls, filename = here("analysis", "output", "fitness_B.tiff"),
-       width = params$fig_width, height = params$fig_height, units = "in", type = "cairo", dpi = 600)
 ```
 
 ```{r constraint-importance-hl-plot, fig.width=params$fig_width_html, fig.height=params$fig_height_html}
@@ -393,6 +439,11 @@ fitness_importance_hl <- bind_rows(fitness_importance_low,
                                    fitness_importance_high) %>% 
   mutate(repp = factor(repp, levels = c("Low", "High"), ordered = TRUE)) %>% 
   arrange(desc(repp), desc(X.IncMSE)) %>% 
+  mutate(constraint = recode(constraint,
+                             `select` = "selection",
+                             `compete` = "competition",
+                             `disperse` = "dispersal",
+                             `selectfor_d` = "species_drift")) %>% 
   color_constraints(constraint) %>% 
   mutate_at(vars(starts_with("constraint")), fct_inorder) %>% 
   mutate(X.IncMSE = X.IncMSE / 100)
@@ -443,15 +494,13 @@ ggsave(importance_fitness, filename = here("analysis", "output", "fitness_import
 ```{r plot-fitness-all-combos, fig.width=params$fig_width_big, fig.height=params$fig_height_big}
 plot_fitness_all <- mega_means_plot(constraint_combo_outcomes_ls, landscape_fitness_linked, 
                                     xlab = "Average landscape fitness", 
-                                    title = "C: Average landscape fitness across combinations of constraints")
+                                    title = "Average landscape fitness across combinations of constraints")
 
 plot_fitness_all
 ggsave(plot_fitness_all, filename = here("analysis", "output", "fitness_means_all.pdf"),
        width = params$fig_width_big, height = params$fig_height_big, units = "in", device = cairo_pdf)
 ggsave(plot_fitness_all, filename = here("analysis", "output", "fitness_means_all.png"),
        width = params$fig_width_big, height = params$fig_height_big, units = "in", type = "cairo", dpi = 300)
-ggsave(plot_fitness_all, filename = here("analysis", "output", "fitness_means_all.tiff"),
-       width = params$fig_width_big, height = params$fig_height_big, units = "in", type = "cairo", dpi = 600)
 ```
 
 ## Figure 5: Landscape fitness variance
@@ -484,12 +533,10 @@ ggsave(plot_landscape_fitness_variance, filename = here("analysis", "output", "f
        width = params$fig_width, height = params$fig_height, units = "in", device = cairo_pdf)
 ggsave(plot_landscape_fitness_variance, filename = here("analysis", "output", "fitness_variance.png"),
        width = params$fig_width, height = params$fig_height, units = "in", type = "cairo", dpi = 300)
-ggsave(plot_landscape_fitness_variance, filename = here("analysis", "output", "fitness_variance.tiff"),
-       width = params$fig_width, height = params$fig_height, units = "in", type = "cairo", dpi = 600)
 ```
 
 
-## Figure 6: Evological evenness
+## Figure 6: Ecological evenness
 
 **Fig 6. Effect of the number of constraints on ecological evenness** (A) Boxplots showing ecological evenness across different numbers of constraints; (B) Percent increase in mean standard error in a random forest model when each constraint is removed; (C) Average ecological evenness across all possible combinations of constraints
 
@@ -526,8 +573,6 @@ ggsave(plot_evenness_boxplot, filename = here("analysis", "output", "evenness_A.
        width = params$fig_width, height = params$fig_height, units = "in", device = cairo_pdf)
 ggsave(plot_evenness_boxplot, filename = here("analysis", "output", "evenness_A.png"),
        width = params$fig_width, height = params$fig_height, units = "in", type = "cairo", dpi = 300)
-ggsave(plot_evenness_boxplot, filename = here("analysis", "output", "evenness_A.tiff"),
-       width = params$fig_width, height = params$fig_height, units = "in", type = "cairo", dpi = 600)
 ```
 
 ```{r ecological-evenness-hl-boxplot, fig.width=params$fig_width_html, fig.height=params$fig_height_html}
@@ -612,6 +657,11 @@ evenness_importance_ls <- importance(forest_model_evenness, type = 1, scale = TR
   data.frame() %>% 
   rownames_to_column(var = "constraint") %>% 
   arrange(desc(X.IncMSE)) %>% 
+  mutate(constraint = recode(constraint,
+                             `select` = "selection",
+                             `compete` = "competition",
+                             `disperse` = "dispersal",
+                             `selectfor_d` = "species_drift")) %>% 
   color_constraints(constraint) %>% 
   mutate_at(vars(starts_with("constraint")), fct_inorder) %>% 
   mutate(X.IncMSE = X.IncMSE / 100)
@@ -645,8 +695,6 @@ ggsave(plot_evenness_importance_ls, filename = here("analysis", "output", "evenn
        width = params$fig_width, height = params$fig_height, units = "in", device = cairo_pdf)
 ggsave(plot_evenness_importance_ls, filename = here("analysis", "output", "evenness_B.png"),
        width = params$fig_width, height = params$fig_height, units = "in", type = "cairo", dpi = 300)
-ggsave(plot_evenness_importance_ls, filename = here("analysis", "output", "evenness_B.tiff"),
-       width = params$fig_width, height = params$fig_height, units = "in", type = "cairo", dpi = 600)
 ```
 
 ```{r evenness-importance-hl-plot, fig.width=params$fig_width_html, fig.height=params$fig_height_html}
@@ -664,6 +712,11 @@ evenness_importance_hl <- bind_rows(evenness_importance_low,
                                     evenness_importance_high) %>% 
   mutate(repp = factor(repp, levels = c("Low", "High"), ordered = TRUE)) %>% 
   arrange(desc(repp), desc(X.IncMSE)) %>% 
+  mutate(constraint = recode(constraint,
+                             `select` = "selection",
+                             `compete` = "competition",
+                             `disperse` = "dispersal",
+                             `selectfor_d` = "species_drift")) %>% 
   color_constraints(constraint) %>% 
   mutate_at(vars(starts_with("constraint")), fct_inorder) %>% 
   mutate(X.IncMSE = X.IncMSE / 100)
@@ -713,7 +766,7 @@ ggsave(importance_evenness, filename = here("analysis", "output", "evenness_impo
 ```{r plot-evenness-all-combos, fig.width=params$fig_width_big, fig.height=params$fig_height_big, warning=FALSE, message=FALSE}
 plot_evenness_all <- mega_means_plot(constraint_combo_outcomes_ls, avg_evenness_t, 
                                      xlab = "Average ecological evenness", 
-                                     title = "C: Average ecological evenness across combinations of constraints", 
+                                     title = "Average ecological evenness across combinations of constraints", 
                                      add_to_left = 0.08)
 
 plot_evenness_all
@@ -722,8 +775,6 @@ ggsave(plot_evenness_all, filename = here("analysis", "output", "evenness_means_
        width = params$fig_width_big, height = params$fig_height_big, units = "in", device = cairo_pdf)
 ggsave(plot_evenness_all, filename = here("analysis", "output", "evenness_means_all.png"),
        width = params$fig_width_big, height = params$fig_height_big, units = "in", type = "cairo", dpi = 300)
-ggsave(plot_evenness_all, filename = here("analysis", "output", "evenness_means_all.tiff"),
-       width = params$fig_width_big, height = params$fig_height_big, units = "in", type = "cairo", dpi = 600)
 ```
 
 
@@ -747,7 +798,7 @@ plot_richness_boxplot <- ggplot(sim_ls, aes(x = n_constraints_f, y = landscape_r
   labs(x = "Number of constraints",
        y = "Landscape richness",
        title = "A: Landscape richness and constraints",
-       subtitle = "Values near zero indicate high richness",
+       subtitle = "Values near zero indicate low species richness",
        caption = glue("<span style='color:{clrs$grey}'>◆</span> = mean value")) +
   theme_constraint() + 
   theme(panel.grid.major.x = element_blank(),
@@ -764,8 +815,6 @@ ggsave(plot_richness_boxplot, filename = here("analysis", "output", "richness_A.
        width = params$fig_width, height = params$fig_height, units = "in", device = cairo_pdf)
 ggsave(plot_richness_boxplot, filename = here("analysis", "output", "richness_A.png"),
        width = params$fig_width, height = params$fig_height, units = "in", type = "cairo", dpi = 300)
-ggsave(plot_richness_boxplot, filename = here("analysis", "output", "richness_A.tiff"),
-       width = params$fig_width, height = params$fig_height, units = "in", type = "cairo", dpi = 600)
 ```
 
 ```{r landscape-richness-hl-boxplot, fig.width=params$fig_width_html, fig.height=params$fig_height_html}
@@ -850,6 +899,11 @@ richness_importance_ls <- importance(forest_model_richness, type = 1, scale = TR
   data.frame() %>% 
   rownames_to_column(var = "constraint") %>% 
   arrange(desc(X.IncMSE)) %>% 
+  mutate(constraint = recode(constraint,
+                             `select` = "selection",
+                             `compete` = "competition",
+                             `disperse` = "dispersal",
+                             `selectfor_d` = "species_drift")) %>% 
   color_constraints(constraint) %>% 
   mutate_at(vars(starts_with("constraint")), fct_inorder) %>% 
   mutate(X.IncMSE = X.IncMSE / 100)
@@ -883,8 +937,6 @@ ggsave(plot_richness_importance_ls, filename = here("analysis", "output", "richn
        width = params$fig_width, height = params$fig_height, units = "in", device = cairo_pdf)
 ggsave(plot_richness_importance_ls, filename = here("analysis", "output", "richness_B.png"),
        width = params$fig_width, height = params$fig_height, units = "in", type = "cairo", dpi = 300)
-ggsave(plot_richness_importance_ls, filename = here("analysis", "output", "richness_B.tiff"),
-       width = params$fig_width, height = params$fig_height, units = "in", type = "cairo", dpi = 600)
 ```
 
 ```{r richness-importance-hl-plot, fig.width=params$fig_width_html, fig.height=params$fig_height_html}
@@ -902,6 +954,11 @@ richness_importance_hl <- bind_rows(richness_importance_low,
                                     richness_importance_high) %>% 
   mutate(repp = factor(repp, levels = c("Low", "High"), ordered = TRUE)) %>% 
   arrange(desc(repp), desc(X.IncMSE)) %>% 
+  mutate(constraint = recode(constraint,
+                             `select` = "selection",
+                             `compete` = "competition",
+                             `disperse` = "dispersal",
+                             `selectfor_d` = "species_drift")) %>% 
   color_constraints(constraint) %>% 
   mutate_at(vars(starts_with("constraint")), fct_inorder) %>% 
   mutate(X.IncMSE = X.IncMSE / 100)
@@ -953,7 +1010,7 @@ ggsave(importance_richness, filename = here("analysis", "output", "richness_impo
 ```{r plot-richness-all-combos, fig.width=params$fig_width_big, fig.height=params$fig_height_big, warning=FALSE, message=FALSE}
 plot_richness_all <- mega_means_plot(constraint_combo_outcomes_ls, landscape_richness_mean, 
                                      xlab = "Average landscape richness", 
-                                     title = "C: Average landscape richness across combinations of constraints", 
+                                     title = "Average landscape richness across combinations of constraints", 
                                      add_to_left = 1)
 
 plot_richness_all
@@ -961,8 +1018,6 @@ ggsave(plot_richness_all, filename = here("analysis", "output", "richness_means_
        width = params$fig_width_big, height = params$fig_height_big, units = "in", device = cairo_pdf)
 ggsave(plot_richness_all, filename = here("analysis", "output", "richness_means_all.png"),
        width = params$fig_width_big, height = params$fig_height_big, units = "in", type = "cairo", dpi = 300)
-ggsave(plot_richness_all, filename = here("analysis", "output", "richness_means_all.tiff"),
-       width = params$fig_width_big, height = params$fig_height_big, units = "in", type = "cairo", dpi = 600)
 ```
 
 
@@ -1003,8 +1058,6 @@ ggsave(plot_turnover_boxplot, filename = here("analysis", "output", "turnover_A.
        width = params$fig_width, height = params$fig_height, units = "in", device = cairo_pdf)
 ggsave(plot_turnover_boxplot, filename = here("analysis", "output", "turnover_A.png"),
        width = params$fig_width, height = params$fig_height, units = "in", type = "cairo", dpi = 300)
-ggsave(plot_turnover_boxplot, filename = here("analysis", "output", "turnover_A.tiff"),
-       width = params$fig_width, height = params$fig_height, units = "in", type = "cairo", dpi = 600)
 ```
 
 ```{r turnover-hl-boxplot, fig.width=params$fig_width_html, fig.height=params$fig_height_html}
@@ -1089,6 +1142,11 @@ turnover_importance_ls <- importance(forest_model_turnover, type = 1, scale = TR
   data.frame() %>% 
   rownames_to_column(var = "constraint") %>% 
   arrange(desc(X.IncMSE)) %>% 
+  mutate(constraint = recode(constraint,
+                             `select` = "selection",
+                             `compete` = "competition",
+                             `disperse` = "dispersal",
+                             `selectfor_d` = "species_drift")) %>% 
   color_constraints(constraint) %>% 
   mutate_at(vars(starts_with("constraint")), fct_inorder) %>% 
   mutate(X.IncMSE = X.IncMSE / 100)
@@ -1123,8 +1181,6 @@ ggsave(plot_turnover_importance_ls, filename = here("analysis", "output", "turno
        width = params$fig_width, height = params$fig_height, units = "in", device = cairo_pdf)
 ggsave(plot_turnover_importance_ls, filename = here("analysis", "output", "turnover_B.png"),
        width = params$fig_width, height = params$fig_height, units = "in", type = "cairo", dpi = 300)
-ggsave(plot_turnover_importance_ls, filename = here("analysis", "output", "turnover_B.tiff"),
-       width = params$fig_width, height = params$fig_height, units = "in", type = "cairo", dpi = 600)
 ```
 
 ```{r turnover-importance-hl-plot, fig.width=params$fig_width_html, fig.height=params$fig_height_html}
@@ -1142,6 +1198,11 @@ turnover_importance_hl <- bind_rows(turnover_importance_low,
                                     turnover_importance_high) %>% 
   mutate(repp = factor(repp, levels = c("Low", "High"), ordered = TRUE)) %>% 
   arrange(desc(repp), desc(X.IncMSE)) %>% 
+  mutate(constraint = recode(constraint,
+                             `select` = "selection",
+                             `compete` = "competition",
+                             `disperse` = "dispersal",
+                             `selectfor_d` = "species_drift")) %>% 
   color_constraints(constraint) %>% 
   mutate_at(vars(starts_with("constraint")), fct_inorder) %>% 
   mutate(X.IncMSE = X.IncMSE / 100)
@@ -1193,7 +1254,7 @@ ggsave(importance_turnover, filename = here("analysis", "output", "turnover_impo
 ```{r plot-turnover-all-combos, fig.width=params$fig_width_big, fig.height=params$fig_height_big, warning=FALSE, message=FALSE}
 plot_turnover_all <- mega_means_plot(constraint_combo_outcomes_ls, turnover_diff, 
                                      xlab = "Average ∆ turnover", 
-                                     title = "C: Average ∆ in turnover (linked species − unlinked species) across combinations of constraints", 
+                                     title = "Average ∆ in turnover (linked species − unlinked species) across combinations of constraints", 
                                      add_to_right = 0.02, add_to_left = 0.02)
 
 plot_turnover_all
@@ -1201,10 +1262,46 @@ ggsave(plot_turnover_all, filename = here("analysis", "output", "turnover_means_
        width = params$fig_width_big, height = params$fig_height_big, units = "in", device = cairo_pdf)
 ggsave(plot_turnover_all, filename = here("analysis", "output", "turnover_means_all.png"),
        width = params$fig_width_big, height = params$fig_height_big, units = "in", type = "cairo", dpi = 300)
-ggsave(plot_turnover_all, filename = here("analysis", "output", "turnover_means_all.tiff"),
-       width = params$fig_width_big, height = params$fig_height_big, units = "in", type = "cairo", dpi = 600)
 ```
 
+## Figure 9: Landscape variation
+
+**Fig 9. Overall landscape variation in species richness**
+
+```{r landscape-species-ls-boxplot, fig.width=params$fig_width_html, fig.height=params$fig_height_html}
+plot_variation_boxplot <- ggplot(sim_ls, aes(x = n_constraints_f, y = landscape_species_number_var)) +
+  geom_half_point(size = 0.01, alpha = 0.01, side = "r", color = "grey50",
+                  transformation_params = list(width = 0.25, height = 0, seed = 1234)) +
+  geom_half_boxplot(aes(fill = "Latin hypercube samples"),
+                    size = 0.25, side = "l", outlier.shape = NA, errorbar.draw = TRUE, alpha = 0.5) +
+  stat_summary(geom = "point", fun = "mean",
+               size = 1, pch = 23, fill = clrs$grey, color = "white",
+               position = position_nudge(x = -0.19)) +
+  # scale_y_reverse() +
+  scale_fill_manual(values = c("#0074D9"), name = NULL) +
+  guides(fill = guide_legend(direction = "horizontal", override.aes = list(alpha = 0.3, size = 0.25))) +
+  coord_cartesian(ylim = c(0, 300)) +
+  labs(x = "Number of constraints",
+       y = "Landscape variation in species richness",
+       title = "A: Landscape variation in species richness",
+       # subtitle = "Values near zero indicate high variation",
+       caption = glue("<span style='color:{clrs$grey}'>◆</span> = mean value")) +
+  theme_constraint() + 
+  theme(panel.grid.major.x = element_blank(),
+        plot.caption = element_markdown(),
+        plot.title.position = "plot",
+        legend.position = c(0, 0),
+        legend.justification = "left",
+        legend.text = element_text(size = rel(0.7)),
+        legend.box.margin = ggplot2::margin(l = -0.5, t = 4.15, unit = "lines"),
+        legend.key.size = unit(0.75, "lines"))
+plot_variation_boxplot
+
+ggsave(plot_variation_boxplot, filename = here("analysis", "output", "landscape_species.pdf"),
+       width = params$fig_width, height = params$fig_height, units = "in", device = cairo_pdf)
+ggsave(plot_variation_boxplot, filename = here("analysis", "output", "landscape_species.png"),
+       width = params$fig_width, height = params$fig_height, units = "in", type = "cairo", dpi = 300)
+```
 
 \
 
