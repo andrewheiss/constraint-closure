@@ -163,7 +163,7 @@ color_constraints <- function(df, constraint_col) {
 }
 
 # Function for plotting outcomes across combinations of constraints
-mega_means_plot <- function(df, var_name, xlab, title, add_to_right = 0, add_to_left = 0.03) {
+mega_means_plot <- function(df, var_name, xlab, title, add_to_right = 0, add_to_left = 0.03, xlim = NULL) {
   constraint_combos <- df %>%
     group_by(constraint_combo, n) %>%
     summarize(avg = mean({{var_name}})) %>% 
@@ -214,6 +214,12 @@ mega_means_plot <- function(df, var_name, xlab, title, add_to_right = 0, add_to_
     theme(axis.text.y = element_markdown(),
           panel.grid.major.y = element_blank(),
           strip.background = element_rect(fill = "grey80"))
+  
+  if (!is.null(xlim)) {
+    plot_02 <- plot_02 + coord_cartesian(xlim = xlim)
+    plot_3 <- plot_3 + coord_cartesian(xlim = xlim)
+    plot_46 <- plot_46 + coord_cartesian(xlim = xlim)
+  }
   
   plot_all <- (plot_02 | plot_3 | plot_46) +
     plot_annotation(title = title,
@@ -1255,7 +1261,7 @@ ggsave(importance_turnover, filename = here("analysis", "output", "turnover_impo
 plot_turnover_all <- mega_means_plot(constraint_combo_outcomes_ls, turnover_diff, 
                                      xlab = "Average ∆ turnover", 
                                      title = "Average ∆ in turnover (linked species − unlinked species) across combinations of constraints", 
-                                     add_to_right = 0.02, add_to_left = 0.02)
+                                     add_to_right = 0.02, add_to_left = 0.02, xlim = c(-0.1, 0.3))
 
 plot_turnover_all
 ggsave(plot_turnover_all, filename = here("analysis", "output", "turnover_means_all.pdf"),
