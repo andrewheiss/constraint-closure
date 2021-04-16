@@ -9,6 +9,7 @@ params:
   fig_width: 4.5
   fig_width2: 6.5
   fig_height: 2.75
+  fig_height2: 5
   fig_width_html: 6
   fig_height_html: 3.5
   fig_width_big: 10
@@ -1308,6 +1309,111 @@ ggsave(plot_variation_boxplot, filename = here("analysis", "output", "landscape_
 ggsave(plot_variation_boxplot, filename = here("analysis", "output", "landscape_species.png"),
        width = params$fig_width, height = params$fig_height, units = "in", type = "cairo", dpi = 300)
 ```
+
+# Rearranged final figures
+
+## Figure 4
+
+```{r fig-4-final, fig.width=params$fig_width2, fig.height=params$fig_height2}
+plot_fitness_boxplot_final <- plot_fitness_boxplot +
+  labs(title = "4A: Landscape fitness by number of constraints",
+       caption = NULL) + 
+  guides(fill = FALSE)
+
+plot_evenness_boxplot_final <- plot_evenness_boxplot +
+  labs(title = "4B: Ecological evenness by number of constraints",
+       caption = NULL) + 
+  guides(fill = FALSE)
+
+plot_richness_boxplot_final <- plot_richness_boxplot +
+  labs(title = "4C: Species richness by number of constraints",
+       caption = NULL) + 
+  guides(fill = FALSE)
+
+plot_variation_boxplot_final <- plot_variation_boxplot +
+  labs(title = "4D: Species turnover by number of constraints",
+       y = "Landscape variation\nin species richness")
+
+fig_4_final <- (plot_fitness_boxplot_final + plot_evenness_boxplot_final) /
+  (plot_richness_boxplot_final + plot_variation_boxplot_final)
+fig_4_final
+
+ggsave(fig_4_final, filename = here("analysis", "output", "fig_4_final.pdf"),
+       width = params$fig_width2, height = params$fig_height2, 
+       units = "in", device = cairo_pdf)
+ggsave(fig_4_final, filename = here("analysis", "output", "fig_4_final.png"),
+       width = params$fig_width2, height = params$fig_height2, 
+       units = "in", type = "cairo", dpi = 300)
+```
+
+## Figure 5
+
+```{r fig-5-final, fig.width=params$fig_width2, fig.height=params$fig_height2}
+plot_fitness_importance_ls_final <- plot_fitness_importance_ls +
+  labs(title = "5A: Constraint importance by landscape fitness") +
+  guides(shape = FALSE)
+
+plot_evenness_importance_ls_final <- plot_evenness_importance_ls +
+  labs(title = "5B: Constraint importance for ecological evenness",
+       subtitle = NULL) +
+  guides(shape = FALSE)
+
+plot_richness_importance_ls_final <- plot_richness_importance_ls +
+  labs(title = "5C: Constraint importance for species richness",
+       subtitle = NULL)
+
+plot_turnover_importance_ls_final <- plot_turnover_importance_ls +
+  labs(title = "5D: Constraint importance for species turnover",
+       subtitle = NULL) +
+  guides(shape = FALSE)
+
+fig_5_final <- (plot_fitness_importance_ls_final + plot_evenness_importance_ls_final) /
+  (plot_richness_importance_ls_final + plot_turnover_importance_ls_final)
+fig_5_final
+
+ggsave(fig_5_final, filename = here("analysis", "output", "fig_5_final.pdf"),
+       width = params$fig_width2, height = params$fig_height2, 
+       units = "in", device = cairo_pdf)
+ggsave(fig_5_final, filename = here("analysis", "output", "fig_5_final.png"),
+       width = params$fig_width2, height = params$fig_height2, 
+       units = "in", type = "cairo", dpi = 300)
+```
+
+## Figure 6
+
+```{r fig-6-final, fig.width=params$fig_width_html, fig.height=params$fig_height_html}
+plot_landscape_fitness_variance_final <- plot_landscape_fitness_variance + 
+  labs(title = "6: Variance in landscape fitness by number of constraints")
+
+plot_landscape_fitness_variance_final
+
+ggsave(plot_landscape_fitness_variance_final, 
+       filename = here("analysis", "output", "fig_6_final.pdf"),
+       width = params$fig_width, height = params$fig_height, 
+       units = "in", device = cairo_pdf)
+ggsave(plot_landscape_fitness_variance_final, 
+       filename = here("analysis", "output", "fig_6_final.png"),
+       width = params$fig_width, height = params$fig_height, 
+       units = "in", type = "cairo", dpi = 300)
+```
+
+
+## Figure 7
+
+```{r fig-7-final, warning=FALSE, message=FALSE, fig.width=params$fig_width_html, fig.height=params$fig_height_html}
+plot_turnover_boxplot_final <- plot_turnover_boxplot +
+  labs(title = "7: Variance in speies richness by number of constraints")
+
+ggsave(plot_turnover_boxplot_final, 
+       filename = here("analysis", "output", "fig_7_final.pdf"),
+       width = params$fig_width, height = params$fig_height, 
+       units = "in", device = cairo_pdf)
+ggsave(plot_turnover_boxplot_final, 
+       filename = here("analysis", "output", "fig_7_final.png"),
+       width = params$fig_width, height = params$fig_height, 
+       units = "in", type = "cairo", dpi = 300)
+```
+
 
 \
 
