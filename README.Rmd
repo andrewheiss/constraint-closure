@@ -12,31 +12,49 @@ knitr::opts_chunk$set(
 )
 
 Title <- "Can constraint closure provide a generalized understanding of community dynamics in ecosystems?"
+Authors <- "Steven L. Peck and Andrew Heiss"
+Year <- "2021"
 ```
 
 # `r Title`
 
-This repository contains the data and code for our paper:
+[Steven L. Peck](https://lifesciences.byu.edu/directory/steven-peck) • Department of Biology • Brigham Young University  
+[Andrew Heiss](https://www.andrewheiss.com/) • Andrew Young School of Policy Studies • Georgia State University
 
-> Steven L. Peck and Andrew Heiss, (2020). _`r Title`_. bioRxiv <https://doi.org/10.1101/2020.01.28.924001>
+---
 
-Our pre-print is online here:
+[![NVSQ DOI](https://img.shields.io/badge/Oikos%20DOI-forthcoming-brightgreen)](https://doi.org/10.1101/2020.01.28.924001)
+[![bioRxiv DOI](https://img.shields.io/badge/bioRxiv-10.1101%2F2020.01.28.924001-blue)](https://doi.org/10.1101/2020.01.28.924001)
+
+> `r Authors`. `r Year`. ["`r Title`,"](https://doi.org/10.1101/2020.01.28.924001) *Oikos* (forthcoming), doi: forthcoming
+
+---
+
+## Abstract
+
+Ecological theorists have generated several yet unresolved disputes that try to untangle the difficulty in understanding the nature of complex ecological communities. In this paper, we combine two recent theoretical approaches that used together suggest a promising way to consider how evolutionary and ecological processes may be used to frame a general theory of community ecology and its functional stability. First, we consider the theoretical proposal by Mark Vellend (2016) to focus on a small set of higher-level evolutionary and ecological processes that act on species within an ecological community. These processes provide a basis for ecological theory similar to the way in which theoretical population genetics has focused on a small set of mathematical descriptions to undergird its theory. Second, we explore ideas that might be applied to ecosystem functioning developed by Alvaro Moreno and Matteo Mossio's (2015) work on how biologically autonomous systems emerge from closure of relevant constraints. To explore the possibility that combining these two ideas may provide a more general theoretical understanding of ecological communities, we have developed a stochastic, agent-based model, with agents representing species, that explores the potential of using evolutionary and ecological processes as a constraint on the flow of species through an ecosystem. We explore how these ideas help illuminate aspects of stability found in many ecological communities. These agent-based modeling results provide in-principle arguments that suggest that constraint closure, using evolutionary and ecological processes, explains general features of ecological communities. In particular, we find that our model suggests a perspective useful in explaining repeated patterns of stability in ecological evenness, species turnover, species richness, and in measures of fitness.
+
+---
+
+This repository contains the code for our paper. Our pre-print is online here:
 
 > Steven L. Peck and Andrew Heiss, (2020). _`r Title`_. bioRxiv, Accessed `r format(Sys.Date(), "%d %b %Y")`. Online at <https://doi.org/10.1101/2020.01.28.924001>
+
+The paper is published at *Oikos*:
+
+> `r Authors`. `r Year`. ["`r Title`,"](https://doi.org/10.1101/2020.01.28.924001) *Oikos* (forthcoming), doi: forthcoming
 
 
 ### How to download
 
-You can download the compendium as a zip from from this URL: </archive/master.zip>
+You can download the code [as a zip file](/archive/master.zip)
 
 
 ### Licenses
 
-**Text and figures :**  [CC-BY-4.0](http://creativecommons.org/licenses/by/4.0/)
+**Text and figures :** [CC-BY-4.0](http://creativecommons.org/licenses/by/4.0/)
 
 **Code :** See the [LICENSE](LICENSE.md) file
-
-**Data :** [CC-0](http://creativecommons.org/publicdomain/zero/1.0/) attribution requested in reuse
 
 
 ### Contributions
